@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Your First Agent &amp; Tool — Section 02</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#09090b;}
+:root{
+  --bg:#09090b;--s1:#111113;--s2:#18181b;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#f4f4f5;--muted:#a1a1aa;--faint:#3f3f46;
+  --accent:#2997ff;--accent-d:rgba(41,151,255,0.12);
+  --code-bg:#0d1117;
+  --kw:#f47067;--ty:#79c0ff;--fn:#d2a8ff;--st:#a5d6a7;
+  --cm:#484f58;--nu:#e8b05a;--an:#7ee787;
+  --sans:-apple-system,"SF Pro Display","Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono","SF Mono","Fira Code",Menlo,monospace;
+}
+.deck{width:100vw;height:100vh;position:relative;overflow:hidden;}
+.slide{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  padding:8vh 10vw;opacity:0;pointer-events:none;
+  transition:opacity .4s ease,transform .4s ease;
+  transform:translateX(48px);font-family:var(--sans);
+  -webkit-font-smoothing:antialiased;overflow-y:auto;
+}
+.slide.active{opacity:1;pointer-events:all;transform:translateX(0);}
+.slide.out{opacity:0;transform:translateX(-48px);}
+.label{font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:36px;flex-shrink:0;}
+.label-accent{color:var(--accent);}
+.t-hero{font-size:clamp(52px,7.5vw,108px);font-weight:300;letter-spacing:-.03em;line-height:1.05;color:var(--text);}
+.t-hero b{font-weight:600;}
+.t-title{font-size:clamp(36px,5vw,72px);font-weight:300;letter-spacing:-.025em;line-height:1.1;color:var(--text);}
+.t-heading{font-size:clamp(17px,2vw,24px);font-weight:600;color:var(--text);letter-spacing:-.01em;margin-bottom:10px;}
+.t-body{font-size:clamp(15px,1.6vw,19px);font-weight:400;color:var(--muted);line-height:1.65;}
+.t-body strong{color:var(--text);font-weight:600;}
+p.t-body{margin-bottom:12px;}
+.t-sub{font-size:clamp(16px,1.8vw,22px);font-weight:300;color:var(--muted);line-height:1.6;letter-spacing:-.01em;}
+.rule{width:32px;height:1px;background:var(--accent);margin-bottom:36px;flex-shrink:0;}
+.cols{display:flex;gap:6vw;flex:1;min-height:0;}
+.col{display:flex;flex-direction:column;flex:1;min-width:0;}
+.col-wide{flex:1.35;}.col-narrow{flex:.65;}
+.codeblock{background:var(--code-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;flex-shrink:0;}
+.codeblock.flex-grow{flex:1;display:flex;flex-direction:column;min-height:0;}
+.codeblock.flex-grow pre{flex:1;overflow:auto;}
+.codebar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--s2);border-bottom:1px solid var(--border);}
+.dots{display:flex;gap:6px;}
+.dot{width:10px;height:10px;border-radius:50%;}
+.dr{background:#ef4444;opacity:.7}.dy{background:#eab308;opacity:.7}.dg{background:#22c55e;opacity:.7}
+.codelang{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-left:6px;}
+.codefile{font-size:11px;color:var(--muted);font-family:var(--mono);flex:1;text-align:center;}
+.copybtn{background:none;border:1px solid var(--border2);color:var(--muted);font-size:13px;font-family:var(--sans);padding:3px 9px;border-radius:5px;cursor:pointer;transition:all .15s;}
+.copybtn:hover{border-color:var(--accent);color:var(--accent);}
+pre{padding:20px 22px;font-family:var(--mono);font-size:clamp(13px,1.3vw,15.5px);line-height:1.8;color:var(--text);overflow-x:auto;white-space:pre;}
+pre code{background:none;padding:0;font-size:inherit;color:inherit;}
+code{font-family:var(--mono);font-size:.88em;background:var(--accent-d);color:var(--accent);padding:2px 6px;border-radius:4px;}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px 22px;}
+.card+.card{margin-top:10px;}
+.card-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px;}
+.card-body{font-size:15px;color:var(--muted);line-height:1.55;}
+.steps{display:flex;flex-direction:column;gap:0;flex:1;}
+.step{display:flex;gap:0;}
+.step-g{display:flex;flex-direction:column;align-items:center;width:38px;flex-shrink:0;}
+.step-n{width:28px;height:28px;border-radius:50%;border:1px solid var(--border2);color:var(--accent);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--s2);}
+.step-l{width:1px;flex:1;background:var(--border);margin:4px 0;min-height:12px;}
+.step:last-child .step-l{display:none;}
+.step-c{flex:1;padding-bottom:22px;padding-left:4px;}
+.step-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.step-desc{font-size:15px;color:var(--muted);line-height:1.5;}
+.tbl{width:100%;border-collapse:collapse;font-size:15px;}
+.tbl th{text-align:left;padding:11px 16px;font-size:15px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);border-bottom:1px solid var(--border);}
+.tbl td{padding:11px 16px;border-bottom:1px solid var(--border);color:var(--muted);vertical-align:top;}
+.tbl tr:last-child td{border-bottom:none;}
+.callout{border-radius:10px;padding:16px 20px;display:flex;gap:14px;align-items:flex-start;}
+.callout-i{font-size:18px;flex-shrink:0;margin-top:1px;line-height:1.5;}
+.callout-b{flex:1;}
+.callout-b .h{font-size:15px;font-weight:700;margin-bottom:5px;}
+.callout-b .d{font-size:15px;color:var(--muted);line-height:1.6;}
+.callout-b .d strong{color:var(--text);}
+.c-note{background:var(--accent-d);border:1px solid rgba(41,151,255,.2);}
+.c-note .h{color:var(--accent);}
+.c-warn-box{background:rgba(234,179,8,.07);border:1px solid rgba(234,179,8,.2);}
+.c-warn-box .h{color:#eab308;}
+.c-green-box{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);}
+.c-green-box .h{color:#22c55e;}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:5px 11px;font-size:15px;color:var(--muted);font-weight:500;}
+.nav{position:fixed;bottom:0;left:0;right:0;height:48px;display:flex;align-items:center;padding:0 48px;background:rgba(9,9,11,.8);border-top:1px solid var(--border);backdrop-filter:blur(12px);z-index:100;gap:20px;}
+.nav-btn{background:none;border:none;color:var(--faint);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px;font-family:var(--sans);transition:color .15s;line-height:1;}
+.nav-btn:hover{color:var(--text);}
+.nav-btn:disabled{opacity:.2;cursor:default;}
+.nav-counter{font-size:11px;color:var(--faint);font-weight:600;letter-spacing:.06em;min-width:40px;}
+.nav-progress{flex:1;height:1px;background:var(--border);border-radius:1px;overflow:hidden;}
+.nav-bar{height:100%;background:var(--accent);transition:width .3s ease;}
+.nav-dots{display:flex;gap:8px;align-items:center;}
+.nav-dot{width:5px;height:5px;border-radius:50%;background:var(--faint);border:none;cursor:pointer;transition:background .2s,transform .2s;padding:0;}
+.nav-dot.on{background:var(--accent);transform:scale(1.5);}
+.chrome{position:fixed;top:22px;left:36px;font-size:11px;color:var(--faint);letter-spacing:.05em;z-index:50;font-family:var(--sans);}
+.kbhint{position:fixed;top:22px;right:36px;display:flex;gap:6px;align-items:center;font-size:11px;color:var(--faint);z-index:50;}
+.kbd{border:1px solid var(--border2);border-radius:4px;padding:2px 7px;font-family:var(--mono);font-size:13px;color:var(--muted);background:var(--s2);cursor:pointer;transition:border-color .15s,color .15s;}
+.kbd:hover{border-color:var(--accent);color:var(--accent);}
+</style>
+</head>
+<body>
+
+<div class="chrome">Building Agents with ADK &nbsp;·&nbsp; Section 02</div>
+<div class="kbhint"><span class="kbd" onclick="go(-1)">←</span><span class="kbd" onclick="go(1)">→</span></div>
+
+<div class="deck" id="deck">
+
+<!-- ══════════════════════════════════════════════════════════
+  01  TITLE
+══════════════════════════════════════════════════════════════ -->
+<div class="slide active" data-i="0">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:820px;">
+    <div class="label" style="margin-bottom:28px;font-size:18px;letter-spacing:.08em;">
+      <span class="label-accent">02</span> &nbsp;·&nbsp; Your First Agent &amp; Tool
+    </div>
+    <h1 class="t-hero">
+      Your First Agent<br>
+      <b>with Multiple Tools</b>
+    </h1>
+    <p class="t-sub" style="max-width:640px;margin-top:24px;">
+      Build an agent that checks <strong>live weather</strong> and looks up <strong>country facts</strong>
+      — two real tools, two real APIs, no API key needed.
+    </p>
+    <div style="display:flex;gap:10px;margin-top:36px;flex-wrap:wrap;">
+      <span class="pill">🤖 LlmAgent</span>
+      <span class="pill">🔧 FunctionTool</span>
+      <span class="pill">📋 @Schema</span>
+      <span class="pill">🌤 Open-Meteo API</span>
+      <span class="pill">🌍 RestCountries API</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+  THEORY — WHAT IS AN AGENT
+══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-i="1">
+  <div class="label"><span class="label-accent">THEORY</span> &nbsp;·&nbsp; LLM vs Agent — what's the difference?</div>
+  <h2 class="t-title" style="margin-bottom:8px;">What Is an Agent?</h2>
+  <div class="rule"></div>
+  <div class="cols">
+    <div class="col" style="gap:12px;justify-content:flex-start;">
+      <div class="t-heading" style="font-size:15px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">A plain LLM</div>
+      <div class="card">
+        <div class="card-body">You send a prompt. The model returns text. <strong>One round trip — done.</strong> It has no memory of prior messages, no ability to fetch data, and no way to take actions in the world.</div>
+      </div>
+      <div class="card">
+        <div class="card-body" style="font-family:var(--mono);font-size:14px;line-height:2.2;">
+          user → <span style="color:var(--muted);">LLM</span> → text
+          <div style="color:var(--faint);font-size:12px;margin-top:4px;">text in · text out · no loop · no tools</div>
+        </div>
+      </div>
+      <div class="callout c-warn-box">
+        <span class="callout-i">⚠️</span>
+        <div class="callout-b">
+          <div class="h">Knowledge is frozen at training time</div>
+          <div class="d">Ask an LLM "What's the weather in Tokyo right now?" — it cannot know. Its weights were fixed months ago. It can only describe what it would do, not actually do it.</div>
+        </div>
+      </div>
+    </div>
+    <div class="col" style="gap:12px;justify-content:flex-start;">
+      <div class="t-heading" style="font-size:15px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">An agent</div>
+      <div class="card" style="border-color:rgba(41,151,255,.3);">
+        <div class="card-body">An agent is an <strong>LLM wrapped in a loop</strong>. On each turn it can observe the conversation, decide to call a tool, receive the result, and loop again — until it has everything it needs to answer.</div>
+      </div>
+      <div class="card" style="border-color:rgba(41,151,255,.3);">
+        <div class="card-body" style="font-family:var(--mono);font-size:13px;line-height:2.1;">
+          user →<br>
+          <span style="color:var(--accent);">  observe → think → act (tool)</span><br>
+          <span style="color:var(--muted);">  ← result → think → act (tool)</span><br>
+          <span style="color:#22c55e;">  ← result → final answer</span>
+        </div>
+      </div>
+      <div class="callout c-green-box">
+        <span class="callout-i">✅</span>
+        <div class="callout-b">
+          <div class="h">The mental model</div>
+          <div class="d">The <strong>LLM is the brain</strong> — it reasons and decides. <strong>Tools are the hands</strong> — they reach outside into the real world. An agent is the combination of both.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+  CODE — STEP 1: BARE AGENT
+══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-i="2">
+  <div class="label"><span class="label-accent">STEP 1</span> &nbsp;·&nbsp; Get the agent running first — no tools yet</div>
+  <h2 class="t-title" style="margin-bottom:8px;">The Bare Agent</h2>
+  <div class="rule"></div>
+  <div class="cols">
+    <div class="col col-wide">
+      <div class="codeblock flex-grow">
+        <div class="codebar">
+          <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+          <span class="codelang">java</span>
+          <span class="codefile">TripPlannerAgent.java</span>
+          <button class="copybtn" onclick="cp(this)">Copy</button>
+        </div>
+        <pre><code><span class="kw">private static final</span> <span class="ty">String</span> MODEL_NAME = <span class="st">"qwen/qwen3.5-9b"</span>;
+
+<span class="kw">static</span> {
+    <span class="ty">LlmRegistry</span>.registerLlm(MODEL_NAME, name -&gt; <span class="kw">new</span> <span class="ty">LocalLLM</span>(MODEL_NAME));
+}
+
+<span class="kw">public static final</span> <span class="ty">LlmAgent</span> ROOT_AGENT = <span class="ty">LlmAgent</span>.builder()
+    .name(<span class="st">"trip-planner-agent"</span>)
+    .description(<span class="st">"Helps users plan trips"</span>)
+    .instruction(<span class="st">"You are a helpful trip planning assistant."</span>)
+    .model(MODEL_NAME)
+    .build();</code></pre>
+      </div>
+    </div>
+    <div class="col col-narrow" style="gap:12px;justify-content:flex-start;">
+      <div class="codeblock">
+        <div class="codebar">
+          <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+          <span class="codelang">bash</span>
+          <span class="codefile">Start the server</span>
+          <button class="copybtn" onclick="cp(this)">Copy</button>
+        </div>
+        <pre style="font-size:clamp(11px,1.1vw,13px);padding:14px 16px;white-space:pre-wrap;word-break:break-all;"><code>mvn compile exec:java \
+  -Dexec.mainClass=<span class="st">"com.google.adk.web.AdkWebServer"</span> \
+  -Dexec.args=<span class="st">"--adk.agents.source-dir=target \
+  --server.port=8000"</span></code></pre>
+      </div>
+      <div class="callout c-note">
+        <span class="callout-i">💡</span>
+        <div class="callout-b">
+          <div class="h">Run this now</div>
+          <div class="d">Ask it: <strong>"Should I visit Tokyo?"</strong><br><br>
+          It answers — but purely from training data frozen months ago. It has no idea what the weather is <em>right now</em>. That gap is what we'll fix next.</div>
+        </div>
+      </div>
+      <table class="tbl" style="font-size:14px;margin-top:4px;">
+        <thead><tr><th>Field</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>.name()</code></td><td>Agent identity in logs</td></tr>
+          <tr><td><code>.description()</code></td><td>What this agent does</td></tr>
+          <tr><td><code>.instruction()</code></td><td>The system prompt</td></tr>
+          <tr><td><code>.model()</code></td><td>Which LLM to use</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+  THEORY — WHAT ARE TOOLS & WHY AGENTS NEED THEM
+══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-i="3">
+  <div class="label"><span class="label-accent">THEORY</span> &nbsp;·&nbsp; What gives an agent its power?</div>
+  <h2 class="t-title" style="margin-bottom:8px;">What Are Tools &amp; Why Agents Need Them</h2>
+  <div class="rule"></div>
+  <div class="cols">
+    <div class="col" style="gap:10px;justify-content:flex-start;">
+      <div class="t-heading" style="font-size:15px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Without tools</div>
+      <div class="card">
+        <div class="card-title">Frozen knowledge</div>
+        <div class="card-body">An LLM's weights are fixed at training time. Ask it today's temperature in Tokyo — it cannot know. That fact didn't exist when it was trained.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">No side-effects</div>
+        <div class="card-body">A plain LLM produces text only. It cannot fetch a URL, read a database, or call an API. It can only <em>describe</em> doing those things.</div>
+      </div>
+      <div class="callout c-warn-box">
+        <span class="callout-i">⚠️</span>
+        <div class="callout-b">
+          <div class="h">Everything useful lives outside the model</div>
+          <div class="d">Weather, country facts, prices, tickets — none of it is in the weights. All of it needs a network call.</div>
+        </div>
+      </div>
+    </div>
+    <div class="col" style="gap:10px;justify-content:flex-start;">
+      <div class="t-heading" style="font-size:15px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">With tools</div>
+      <div class="card" style="border-color:rgba(41,151,255,.3);">
+        <div class="card-title">Real-time data</div>
+        <div class="card-body">A tool is a <strong>plain Java method</strong>. It can call any API, read any database, run any code. The result comes back as data the LLM reasons over.</div>
+      </div>
+      <div class="card" style="border-color:rgba(41,151,255,.3);">
+        <div class="card-title">Real-world actions</div>
+        <div class="card-body">Tools can have side-effects — send a Slack message, create a ticket, restart a service. The LLM <strong>decides</strong> when. Your code <strong>executes</strong> it.</div>
+      </div>
+      <div class="card" style="border-color:rgba(41,151,255,.3);">
+        <div class="card-title">Composability</div>
+        <div class="card-body">One agent can have many tools. The LLM reads all their descriptions and picks the right one per turn — or calls several. You write zero routing logic.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+  STEP 2 SKELETON — getCountryInfo signature only
+══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-i="4">
+  <div class="label"><span class="label-accent">STEP 2</span> &nbsp;·&nbsp; Define the tool before implementing it</div>
+  <h2 class="t-title" style="margin-bottom:8px;">Tool Signature</h2>
+  <div class="rule"></div>
+  <div class="cols">
+    <div class="col col-wide" style="gap:12px;">
+      <div class="codeblock flex-grow">
+        <div class="codebar">
+          <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+          <span class="codelang">java</span>
+          <span class="codefile">TripPlannerAgent.java — skeleton</span>
+        </div>
+        <pre><code><span class="cm">// Tool 1 — takes a country name, returns travel facts</span>
+<span class="an">@Schema</span>(description = <span class="st">"Get key travel facts about a country"</span>)
+<span class="kw">public static</span> <span class="ty">JsonNode</span> <span class="fn">getCountryInfo</span>(
+    <span class="an">@Schema</span>(name = <span class="st">"country"</span>, description = <span class="st">"Country name, e.g. Japan"</span>) <span class="ty">String</span> country
+) <span class="kw">throws</span> <span class="ty">Exception</span> {
+    <span class="cm">// TODO</span>
+    <span class="kw">return null</span>;
+}</code></pre>
+      </div>
+    </div>
+    <div class="col col-narrow" style="gap:12px;justify-content:flex-start;">
+      <div class="callout c-note">
+        <span class="callout-i">💡</span>
+        <div class="callout-b">
+          <div class="h">Signature first</div>
+          <div class="d">We know the shape: takes a country name, returns travel facts. The implementation depends on which API we call — let's look at that next before writing a single line.</div>
+        </div>
+      </div>
+      <div class="callout c-warn-box">
+        <span class="callout-i">🔍</span>
+        <div class="callout-b">
+          <div class="h">What API do we call?</div>
+          <div class="d">We need an API that takes a country name and returns capital, currency, language, timezone. Next slide: let's see what RestCountries actually returns.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+  THE API — RestCountries
+══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-i="5">
+  <div class="label"><span class="label-accent">THE API</span> &nbsp;·&nbsp; Let's see what RestCountries returns before writing the tool</div>
+  <h2 class="t-title" style="margin-bottom:8px;">RestCountries API</h2>
+  <div class="rule"></div>
+  <div class="cols">
+    <div class="col col-wide" style="gap:10px;">
+      <div class="codeblock">
+        <div class="codebar">
+          <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+          <span class="codelang">bash</span>
+          <span class="codefile">Country facts &nbsp;(RestCountries, free, no key)</span>
+        </div>
+        <pre style="font-size:clamp(12px,1.2vw,14px);padding:14px 18px;"><code>curl "https://restcountries.com/v3.1/name/Japan?fields=name,capital,currencies,languages,timezones,population"</code></pre>
+      </div>
+      <div class="codeblock flex-grow">
+        <div class="codebar">
+          <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+          <span class="codelang">json</span>
+          <span class="codefile">response</span>
+        </div>
+        <pre style="font-size:clamp(13px,1.3vw,15px);"><code>[{
+  <span class="st">"name"</span>: {
+    <span class="st">"common"</span>: <span class="st">"Japan"</span>,
+    <span class="st">"official"</span>: <span class="st">"Japan"</span>
+  },
+  <span class="st">"capital"</span>:    [<span class="st">"Tokyo"</span>],
+  <span class="st">"population"</span>: <span class="nu">125681593</span>,
+  <span class="st">"currencies"</span>: { <span class="st">"JPY"</span>: { <span class="st">"name"</span>: <span class="st">"Japanese yen"</span>, <span class="st">"symbol"</span>: <span class="st">"¥"</span> } },
+  <span class="st">"languages"</span>:  { <span class="st">"jpn"</span>: <span class="st">"Japanese"</span> },
+  <span class="st">"timezones"</span>:  [<span class="st">"UTC+09:00"</span>]
+}]</code></pre>
+      </div>
+    </div>
+    <div class="col col-narrow" style="gap:12px;justify-content:flex-start;">
+      <div class="callout c-note">
+        <span class="callout-i">💡</span>
+        <div class="callout-b">
+          <div class="h">Returns an array</div>
+          <div class="d">The response is a JSON array — even for a single country. Our tool calls <code>.get(0)</code> to unwrap the first element before returning it to the LLM.</div>
+        </div>
+      </div>
+      <div class="callout c-green-box">
+        <span class="callout-i">✅</span>
+        <div class="callout-b">
+          <div class="h">?fields= keeps it lean</div>
+          <div class="d">Without the <code>fields</code> param the full response is ~80 fields. We request only what the LLM needs — capital, currency, language, timezone, population.</div>
+        </div>
+      </div>
+      <div class="callout c-warn-box">
+        <span class="callout-i">🔍</span>
+        <div class="callout-b">
+          <div class="h">No geocoding needed</div>
+          <div class="d">Country info only needs a name — no coordinates. <code>getCountryInfo</code> is a single independent call, making it the simplest tool to implement first.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+  CODE — STEP 2: ADD getCountryInfo
+══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-i="6">
+  <div class="label"><span class="label-accent">STEP 2</span> &nbsp;·&nbsp; Simplest tool first — one API call, no chaining</div>
+  <h2 class="t-title" style="margin-bottom:8px;">Add <code style="font-size:clamp(28px,4vw,56px);background:none;color:inherit;padding:0;">getCountryInfo</code></h2>
+  <div class="rule"></div>
+  <div class="cols">
+    <div class="col col-wide" style="gap:10px;">
+      <div class="codeblock">
+        <div class="codebar">
+          <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+          <span class="codelang">java</span>
+          <span class="codefile">TripPlannerAgent.java</span>
+          <button class="copybtn" onclick="cp(this)">Copy</button>
+        </div>
+        <pre style="font-size:clamp(13px,1.3vw,15px);"><code><span class="an">@Schema</span>(description = <span class="st">"Get key travel facts about a country"</span>)
+<span class="kw">public static</span> <span class="ty">JsonNode</span> <span class="fn">getCountryInfo</span>(
+    <span class="an">@Schema</span>(name = <span class="st">"country"</span>, description = <span class="st">"Country name, e.g. Japan"</span>) <span class="ty">String</span> country
+) <span class="kw">throws</span> <span class="ty">Exception</span> {
+    <span class="kw">return</span> <span class="fn">fetch</span>(
+        <span class="st">"https://restcountries.com/v3.1/name/"</span>
+        + country.replace(<span class="st">" "</span>, <span class="st">"%20"</span>)
+        + <span class="st">"?fields=name,capital,currencies,languages,timezones,population"</span>
+    ).get(<span class="nu">0</span>);
+}
+
+<span class="kw">private static</span> <span class="ty">JsonNode</span> <span class="fn">fetch</span>(<span class="ty">String</span> url) <span class="kw">throws</span> <span class="ty">Exception</span> {
+    <span class="ty">HttpRequest</span> req = <span class="ty">HttpRequest</span>.newBuilder(<span class="ty">URI</span>.create(url)).GET().build();
+    <span class="ty">String</span> body = <span class="ty">HttpClient</span>.newHttpClient().send(req, <span class="ty">HttpResponse</span>.<span class="ty">BodyHandlers</span>.ofString()).body();
+    <span class="kw">return new</span> <span class="ty">ObjectMapper</span>().readTree(body);
+}</code></pre>
+      </div>
+    </div>
+    <div class="col col-narrow" style="gap:10px;justify-content:flex-start;">
+      <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.3);border-radius:10px;padding:14px 16px;">
+        <div style="font-size:12px;font-weight:700;color:#22c55e;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">Wire it to the agent</div>
+        <pre style="font-size:13px;padding:0;background:none;line-height:1.8;"><code>.tools(
+    <span class="ty">FunctionTool</span>.create(
+        <span class="ty">TripPlannerAgent</span>.<span class="kw">class</span>,
+        <span class="st">"getCountryInfo"</span>)
+)</code></pre>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;">One tool — agent can now answer questions about any country.</div>
+      </div>
+      <div class="callout c-note">
+        <span class="callout-i">💡</span>
+        <div class="callout-b">
+          <div class="h">fetch() is your HTTP helper</div>
+          <div class="d">One method — builds a GET request, sends it, parses the body as JSON. All three tools will reuse it.</div>
+        </div>
+      </div>
+      <div class="callout c-warn-box">
+        <span class="callout-i">⚠️</span>
+        <div class="callout-b">
+          <div class="h">Notice the @Schema annotations</div>
+          <div class="d">These descriptions are what the LLM reads when deciding to call this tool. Next slide explains exactly why they matter.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+  @Schema DEEP DIVE
+══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-i="7">
+  <div class="label"><span class="label-accent">IMPORTANT</span> &nbsp;·&nbsp; Without this, FunctionTool's reflection breaks silently</div>
+  <h2 class="t-title" style="margin-bottom:8px;">The <code style="font-size:clamp(28px,4vw,56px);background:none;color:inherit;padding:0;">@Schema</code> Annotation</h2>
+  <p class="t-sub" style="margin-bottom:0;">The description you write here is what the LLM reads when deciding whether and how to call your tool.</p>
+  <div class="rule" style="margin-top:28px;"></div>
+  <div class="cols">
+    <div class="col" style="gap:14px;">
+      <div class="label" style="font-size:13px;margin-bottom:4px;">What the LLM actually sees (JSON Schema)</div>
+      <div class="codeblock">
+        <div class="codebar">
+          <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+          <span class="codelang">json</span>
+          <span class="codefile">sent to the LLM in every request</span>
+        </div>
+        <pre><code>{
+  <span class="st">"name"</span>: <span class="st">"getCountryInfo"</span>,
+  <span class="st">"description"</span>: <span class="st">"Get key travel facts about a country"</span>,
+  <span class="st">"parameters"</span>: {
+    <span class="st">"type"</span>: <span class="st">"object"</span>,
+    <span class="st">"properties"</span>: {
+      <span class="st">"country"</span>: {
+        <span class="st">"type"</span>: <span class="st">"string"</span>,
+        <span class="st">"description"</span>: <span class="st">"Country name, e.g. Japan"</span>
+      }
+    },
+    <span class="st">"required"</span>: [<span class="st">"country"</span>]
+  }
+}</code></pre>
+      </div>
+      <div class="label" style="font-size:13px;margin-bottom:4px;">Fallback — compiler flag &nbsp;<span style="color:var(--muted);font-weight:500;">(names only, no descriptions)</span></div>
+      <div class="codeblock">
+        <div class="codebar">
+          <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+          <span class="codelang">xml</span>
+          <span class="codefile">pom.xml — already set in this project</span>
+        </div>
+        <pre><code>&lt;<span class="ty">compilerArgs</span>&gt;
+  &lt;<span class="kw">arg</span>&gt;<span class="st">-parameters</span>&lt;/<span class="kw">arg</span>&gt;
+&lt;/<span class="ty">compilerArgs</span>&gt;</code></pre>
+      </div>
+    </div>
+    <div class="col col-narrow" style="gap:14px;justify-content:flex-start;">
+      <div class="callout c-note">
+        <span class="callout-i">💡</span>
+        <div class="callout-b">
+          <div class="h">Description quality = call quality</div>
+          <div class="d">The LLM reads these when deciding whether to call the tool and what to pass.<br><br>
+          <strong>"Country name"</strong> is fine. <strong>"Country name, e.g. Japan"</strong> is better — the example guides the model to pass the right format.</div>
+        </div>
+      </div>
+      <div class="callout c-warn-box">
+        <span class="callout-i">⚠️</span>
+        <div class="callout-b">
+          <div class="h">No annotation = silent failure</div>
+          <div class="d">Without <code>@Schema</code> and without <code>-parameters</code>, javac names params <code>arg0</code>, <code>arg1</code>…<br><br>
+          ADK logs a warning but doesn't throw. The LLM either skips the tool or passes garbage arguments.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+  SKELETON — method signatures for weather tools
+══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-i="8">
+  <div class="label"><span class="label-accent">STEP 3</span> &nbsp;·&nbsp; Now the weather tools — plan before implementing</div>
+  <h2 class="t-title" style="margin-bottom:8px;">Tool Signatures</h2>
+  <div class="rule"></div>
+  <div class="cols">
+    <div class="col col-wide" style="gap:12px;">
+      <div class="codeblock flex-grow">
+        <div class="codebar">
+          <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+          <span class="codelang">java</span>
+          <span class="codefile">TripPlannerAgent.java — skeleton</span>
+        </div>
+        <pre><code><span class="cm">// Tool 2 — takes a city name, returns its coordinates</span>
+<span class="an">@Schema</span>(description = <span class="st">"Get the latitude and longitude for a city"</span>)
+<span class="kw">public static</span> <span class="ty">JsonNode</span> <span class="fn">getCityCoordinates</span>(
+    <span class="an">@Schema</span>(name = <span class="st">"city"</span>, description = <span class="st">"City name, e.g. Tokyo"</span>) <span class="ty">String</span> city
+) <span class="kw">throws</span> <span class="ty">Exception</span> {
+    <span class="cm">// TODO</span>
+    <span class="kw">return null</span>;
+}
+
+
+<span class="cm">// Tool 3 — takes coordinates, returns live weather</span>
+<span class="an">@Schema</span>(description = <span class="st">"Get current weather for a location given its coordinates"</span>)
+<span class="kw">public static</span> <span class="ty">JsonNode</span> <span class="fn">getWeather</span>(
+    <span class="an">@Schema</span>(name = <span class="st">"latitude"</span>,  description = <span class="st">"Latitude, e.g. 35.6895"</span>)  <span class="kw">double</span> latitude,
+    <span class="an">@Schema</span>(name = <span class="st">"longitude"</span>, description = <span class="st">"Longitude, e.g. 139.6917"</span>) <span class="kw">double</span> longitude
+) <span class="kw">throws</span> <span class="ty">Exception</span> {
+    <span class="cm">// TODO</span>
+    <span class="kw">return null</span>;
+}</code></pre>
+      </div>
+    </div>
+    <div class="col col-narrow" style="gap:12px;justify-content:flex-start;">
+      <div class="callout c-note">
+        <span class="callout-i">💡</span>
+        <div class="callout-b">
+          <div class="h">Two tools, not one</div>
+          <div class="d"><code>getCityCoordinates</code> returns lat/lon. <code>getWeather</code> takes lat/lon as input.<br><br>
+          Making them separate forces the LLM to chain them — it has to call the first, read the result, then call the second.</div>
+        </div>
+      </div>
+      <div class="callout c-warn-box">
+        <span class="callout-i">🔍</span>
+        <div class="callout-b">
+          <div class="h">What APIs do we call?</div>
+          <div class="d">We need a geocoding API for city → lat/lon, and a weather API for lat/lon → conditions.<br><br>
+          Next slide: let's see what these APIs return before writing a single line of implementation.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+  OPEN-METEO APIs — curl samples before implementing weather tools
+══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-i="9">
+  <div class="label"><span class="label-accent">THE APIS</span> &nbsp;·&nbsp; Two Open-Meteo APIs — free, no key, chained by the LLM</div>
+  <h2 class="t-title" style="margin-bottom:8px;">Open-Meteo APIs</h2>
+  <div class="rule"></div>
+  <div class="cols">
+    <div class="col col-wide" style="gap:10px;">
+      <div class="t-heading" style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;">1 · Geocode city → lat/lon &nbsp;(Open-Meteo, free, no key)</div>
+      <div class="codeblock">
+        <div class="codebar">
+          <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+          <span class="codelang">bash</span>
+          <span class="codefile">geocoding-api.open-meteo.com</span>
+        </div>
+        <pre style="font-size:clamp(12px,1.2vw,13px);padding:12px 16px;"><code>curl "https://geocoding-api.open-meteo.com/v1/search?name=Tokyo&amp;count=1&amp;format=json"</code></pre>
+      </div>
+      <div class="codeblock">
+        <div class="codebar">
+          <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+          <span class="codelang">json</span>
+          <span class="codefile">response — trimmed</span>
+        </div>
+        <pre style="font-size:clamp(12px,1.2vw,13.5px);padding:12px 16px;"><code>{
+  <span class="st">"results"</span>: [{
+    <span class="st">"name"</span>:      <span class="st">"Tokyo"</span>,
+    <span class="st">"latitude"</span>:  <span class="nu">35.6895</span>,
+    <span class="st">"longitude"</span>: <span class="nu">139.69171</span>,
+    <span class="st">"country"</span>:   <span class="st">"Japan"</span>
+  }]
+}</code></pre>
+      </div>
+      <div class="t-heading" style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;margin-top:10px;">2 · Fetch weather by coordinates &nbsp;(Open-Meteo forecast)</div>
+      <div class="codeblock">
+        <div class="codebar">
+          <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+          <span class="codelang">bash</span>
+          <span class="codefile">api.open-meteo.com</span>
+        </div>
+        <pre style="font-size:clamp(12px,1.2vw,13px);padding:12px 16px;"><code>curl "https://api.open-meteo.com/v1/forecast?latitude=35.6895&amp;longitude=139.6917&amp;current=temperature_2m,relative_humidity_2m,wind_speed_10m"</code></pre>
+      </div>
+      <div class="codeblock">
+        <div class="codebar">
+          <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+          <span class="codelang">json</span>
+          <span class="codefile">response — trimmed</span>
+        </div>
+        <pre style="font-size:clamp(12px,1.2vw,13.5px);padding:12px 16px;"><code>{
+  <span class="st">"current"</span>: {
+    <span class="st">"temperature_2m"</span>:       <span class="nu">17.6</span>,
+    <span class="st">"relative_humidity_2m"</span>: <span class="nu">75</span>,
+    <span class="st">"wind_speed_10m"</span>:       <span class="nu">11.5</span>
+  }
+}</code></pre>
+      </div>
+    </div>
+    <div class="col col-narrow" style="gap:12px;justify-content:flex-start;">
+      <div class="callout c-note">
+        <span class="callout-i">💡</span>
+        <div class="callout-b">
+          <div class="h">Chained by the LLM</div>
+          <div class="d">API 1 returns lat/lon. API 2 needs lat/lon as input.<br><br>That dependency is exactly why we make them <strong>two separate tools</strong> — so the LLM chains them automatically. You write zero glue code.</div>
+        </div>
+      </div>
+      <div class="callout c-green-box">
+        <span class="callout-i">✅</span>
+        <div class="callout-b">
+          <div class="h">Try it yourself</div>
+          <div class="d">Both are public, no signup needed. Run the curl commands and see the live JSON — then on the next slide we wrap them as tools.</div>
+        </div>
+      </div>
+      <div class="callout c-warn-box">
+        <span class="callout-i">🔍</span>
+        <div class="callout-b">
+          <div class="h">lat/lon is the handoff</div>
+          <div class="d">The coordinates returned by API 1 are the exact inputs to API 2. The LLM reads both tool descriptions and figures out the order on its own.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+  CODE — STEP 3: ADD getCityCoordinates & getWeather
+══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-i="10">
+  <div class="label"><span class="label-accent">STEP 3</span> &nbsp;·&nbsp; Two tools that chain — the LLM calls them in order</div>
+  <h2 class="t-title" style="margin-bottom:8px;">Add <code style="font-size:clamp(24px,3.5vw,52px);background:none;color:inherit;padding:0;">getCityCoordinates</code> &amp; <code style="font-size:clamp(24px,3.5vw,52px);background:none;color:inherit;padding:0;">getWeather</code></h2>
+  <div class="rule"></div>
+  <div class="cols">
+    <div class="col col-wide" style="gap:10px;">
+      <div class="codeblock">
+        <div class="codebar">
+          <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+          <span class="codelang">java</span>
+          <span class="codefile">TripPlannerAgent.java</span>
+          <button class="copybtn" onclick="cp(this)">Copy</button>
+        </div>
+        <pre style="font-size:clamp(13px,1.3vw,15px);"><code><span class="an">@Schema</span>(description = <span class="st">"Get the latitude and longitude for a city"</span>)
+<span class="kw">public static</span> <span class="ty">JsonNode</span> <span class="fn">getCityCoordinates</span>(
+    <span class="an">@Schema</span>(name = <span class="st">"city"</span>, description = <span class="st">"City name, e.g. Tokyo"</span>) <span class="ty">String</span> city
+) <span class="kw">throws</span> <span class="ty">Exception</span> {
+    <span class="kw">return</span> <span class="fn">fetch</span>(
+        <span class="st">"https://geocoding-api.open-meteo.com/v1/search?name="</span>
+        + city.replace(<span class="st">" "</span>, <span class="st">"+"</span>) + <span class="st">"&amp;count=1&amp;language=en&amp;format=json"</span>
+    ).path(<span class="st">"results"</span>).get(<span class="nu">0</span>);
+}
+
+<span class="an">@Schema</span>(description = <span class="st">"Get current weather for a location given its coordinates"</span>)
+<span class="kw">public static</span> <span class="ty">JsonNode</span> <span class="fn">getWeather</span>(
+    <span class="an">@Schema</span>(name = <span class="st">"latitude"</span>,  description = <span class="st">"Latitude, e.g. 35.6895"</span>)  <span class="kw">double</span> latitude,
+    <span class="an">@Schema</span>(name = <span class="st">"longitude"</span>, description = <span class="st">"Longitude, e.g. 139.6917"</span>) <span class="kw">double</span> longitude
+) <span class="kw">throws</span> <span class="ty">Exception</span> {
+    <span class="kw">return</span> <span class="fn">fetch</span>(<span class="ty">String</span>.format(
+        <span class="st">"https://api.open-meteo.com/v1/forecast"</span>
+        + <span class="st">"?latitude=%.4f&amp;longitude=%.4f"</span>
+        + <span class="st">"&amp;current=temperature_2m,relative_humidity_2m,wind_speed_10m"</span>,
+        latitude, longitude
+    )).path(<span class="st">"current"</span>);
+}</code></pre>
+      </div>
+    </div>
+    <div class="col col-narrow" style="gap:10px;justify-content:flex-start;">
+      <div class="label" style="font-size:12px;margin-bottom:2px;">pom.xml — Jackson for JSON parsing</div>
+      <div class="codeblock">
+        <div class="codebar">
+          <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+          <span class="codelang">xml</span>
+        </div>
+        <pre style="font-size:12px;padding:12px 16px;"><code>&lt;<span class="ty">dependency</span>&gt;
+  &lt;<span class="kw">groupId</span>&gt;com.fasterxml.jackson.core&lt;/<span class="kw">groupId</span>&gt;
+  &lt;<span class="kw">artifactId</span>&gt;jackson-databind&lt;/<span class="kw">artifactId</span>&gt;
+  &lt;<span class="kw">version</span>&gt;<span class="nu">2.17.0</span>&lt;/<span class="kw">version</span>&gt;
+&lt;/<span class="ty">dependency</span>&gt;</code></pre>
+      </div>
+      <div style="background:rgba(41,151,255,.06);border:1px solid rgba(41,151,255,.3);border-radius:10px;padding:14px 16px;">
+        <div style="font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">Wire all three to the agent</div>
+        <pre style="font-size:12px;padding:0;background:none;line-height:1.9;"><code>.tools(
+  <span class="ty">FunctionTool</span>.create(..., <span class="st">"getCountryInfo"</span>),
+  <span class="ty">FunctionTool</span>.create(..., <span class="st">"getCityCoordinates"</span>),
+  <span class="ty">FunctionTool</span>.create(..., <span class="st">"getWeather"</span>)
+)</code></pre>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;">The LLM chains coords → weather automatically — no routing logic from you.</div>
+      </div>
+      <div class="callout c-note">
+        <span class="callout-i">💡</span>
+        <div class="callout-b">
+          <div class="h">Tool chaining for free</div>
+          <div class="d">Ask <strong>"Weather in Tokyo?"</strong> — the LLM calls <code>getCityCoordinates</code> first, takes the lat/lon, then calls <code>getWeather</code>. Zero glue code.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+  08  TripPlannerAgent OVERVIEW
+══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-i="11">
+  <div class="label"><span class="label-accent">WHAT YOU BUILT</span> &nbsp;·&nbsp; Three steps — one working agent</div>
+  <h2 class="t-title" style="margin-bottom:8px;">TripPlannerAgent</h2>
+  <div class="rule"></div>
+  <div class="cols">
+    <div style="flex:2;display:flex;align-items:center;justify-content:center;min-height:0;">
+      <svg viewBox="0 0 560 280" style="width:100%;height:100%;" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="oa1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#52525b"/></marker>
+          <marker id="oa2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="rgba(41,151,255,.7)"/></marker>
+          <marker id="oa3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="rgba(34,197,94,.7)"/></marker>
+        </defs>
+        <!-- User -->
+        <rect x="10" y="112" width="80" height="48" rx="8" fill="#1c1c1e" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+        <text x="50" y="133" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="700" fill="#f4f4f5">User</text>
+        <text x="50" y="150" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#71717a">"Plan Tokyo trip"</text>
+        <!-- user → agent -->
+        <line x1="90" y1="136" x2="152" y2="136" stroke="#52525b" stroke-width="1.5" marker-end="url(#oa1)"/>
+        <!-- TripPlannerAgent -->
+        <rect x="154" y="96" width="136" height="80" rx="10" fill="#18181b" stroke="rgba(41,151,255,.5)" stroke-width="2"/>
+        <text x="222" y="124" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="700" fill="rgba(41,151,255,.95)">TripPlanner</text>
+        <text x="222" y="140" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="13" font-weight="700" fill="rgba(41,151,255,.95)">Agent</text>
+        <text x="222" y="158" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#71717a">LlmAgent + 3 tools</text>
+        <!-- agent → getCityCoordinates -->
+        <line x1="290" y1="108" x2="356" y2="60" stroke="rgba(41,151,255,.6)" stroke-width="1.5" marker-end="url(#oa2)"/>
+        <!-- agent → getWeather -->
+        <line x1="290" y1="136" x2="356" y2="136" stroke="rgba(41,151,255,.6)" stroke-width="1.5" marker-end="url(#oa2)"/>
+        <!-- agent → getCountryInfo -->
+        <line x1="290" y1="164" x2="356" y2="210" stroke="rgba(41,151,255,.6)" stroke-width="1.5" marker-end="url(#oa2)"/>
+        <!-- getCityCoordinates box -->
+        <rect x="358" y="30" width="170" height="56" rx="8" fill="rgba(41,151,255,.06)" stroke="rgba(41,151,255,.35)" stroke-width="1.5"/>
+        <text x="443" y="52" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#2997ff">getCityCoordinates</text>
+        <text x="443" y="68" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#71717a">Open-Meteo geocoding</text>
+        <!-- getWeather box -->
+        <rect x="358" y="108" width="170" height="56" rx="8" fill="rgba(41,151,255,.06)" stroke="rgba(41,151,255,.35)" stroke-width="1.5"/>
+        <text x="443" y="130" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#2997ff">getWeather</text>
+        <text x="443" y="146" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#71717a">Open-Meteo forecast API</text>
+        <!-- getCountryInfo box -->
+        <rect x="358" y="186" width="170" height="56" rx="8" fill="rgba(34,197,94,.06)" stroke="rgba(34,197,94,.35)" stroke-width="1.5"/>
+        <text x="443" y="208" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#22c55e">getCountryInfo</text>
+        <text x="443" y="224" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10" fill="#71717a">RestCountries API</text>
+        <!-- answer back to user -->
+        <path d="M154,148 L126,148 L126,220 L50,220 L50,160" fill="none" stroke="rgba(34,197,94,.55)" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#oa3)"/>
+        <text x="85" y="238" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" fill="rgba(34,197,94,.8)">concrete answer</text>
+      </svg>
+    </div>
+    <div class="col col-narrow" style="gap:10px;justify-content:flex-start;">
+      <div class="card" style="border-color:rgba(41,151,255,.3);">
+        <div class="card-title" style="color:var(--accent);font-size:14px;">Step 1 — Bare agent</div>
+        <div class="card-body" style="font-size:13px;line-height:1.6;">Just LlmAgent + instruction. Answers from training data only.</div>
+      </div>
+      <div class="card" style="border-color:rgba(41,151,255,.3);">
+        <div class="card-title" style="color:var(--accent);font-size:14px;">Step 2 — getCountryInfo</div>
+        <div class="card-body" style="font-size:13px;line-height:1.6;">First tool — country facts from RestCountries. One API call, no chaining.</div>
+      </div>
+      <div class="card" style="border-color:rgba(34,197,94,.3);">
+        <div class="card-title" style="color:#22c55e;font-size:14px;">Step 3 — getCityCoordinates + getWeather</div>
+        <div class="card-body" style="font-size:13px;line-height:1.6;">Two chained tools — LLM calls coords first, then passes lat/lon to weather. Three tools total, zero routing logic.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+  09  THEORY — HOW THE LLM PICKS A TOOL (BEHIND THE SCENES)
+══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-i="12">
+  <div class="label"><span class="label-accent">BEHIND THE SCENES</span> &nbsp;·&nbsp; What actually happens when you send a message</div>
+  <h2 class="t-title" style="margin-bottom:8px;">How the LLM Picks a Tool</h2>
+  <div class="rule" style="margin-top:16px;"></div>
+  <div class="cols">
+    <div class="col col-wide" style="gap:10px;">
+
+      <!-- Step 1 -->
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="width:22px;height:22px;border-radius:50%;background:var(--accent-d);border:1px solid rgba(41,151,255,.35);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent);flex-shrink:0;margin-top:2px;">1</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">ADK attaches every tool's schema to the request</div>
+          <div class="codeblock">
+            <div class="codebar"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="codelang">json</span><span class="codefile">sent to the LLM alongside your message</span></div>
+            <pre style="font-size:12px;padding:10px 16px;"><code>[
+  { <span class="st">"name"</span>: <span class="st">"getCountryInfo"</span>,    <span class="st">"description"</span>: <span class="st">"Get key travel facts about a country"</span> },
+  { <span class="st">"name"</span>: <span class="st">"getCityCoordinates"</span>, <span class="st">"description"</span>: <span class="st">"Get the latitude and longitude for a city"</span> },
+  { <span class="st">"name"</span>: <span class="st">"getWeather"</span>,         <span class="st">"description"</span>: <span class="st">"Get current weather given coordinates"</span> }
+]</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="width:22px;height:22px;border-radius:50%;background:var(--accent-d);border:1px solid rgba(41,151,255,.35);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent);flex-shrink:0;margin-top:2px;">2</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">LLM reasons over the descriptions — no if/else in your code</div>
+          <div class="card" style="padding:12px 16px;">
+            <div class="card-body" style="font-size:13px;line-height:1.75;font-style:italic;color:var(--muted);">
+              "User wants weather and travel info for Tokyo. <br>
+              <span style="color:var(--text);">getCountryInfo</span> → travel facts ✓ &nbsp;
+              <span style="color:var(--text);">getCityCoordinates</span> → I need lat/lon first ✓ &nbsp;
+              <span style="color:var(--text);">getWeather</span> → needs lat/lon, call after ✓"
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="width:22px;height:22px;border-radius:50%;background:var(--accent-d);border:1px solid rgba(41,151,255,.35);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent);flex-shrink:0;margin-top:2px;">3</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">LLM responds with a tool call — not text</div>
+          <div class="codeblock">
+            <div class="codebar"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="codelang">json</span><span class="codefile">LLM output — ADK executes this, not you</span></div>
+            <pre style="font-size:12px;padding:10px 16px;"><code>{ <span class="st">"name"</span>: <span class="st">"getCityCoordinates"</span>, <span class="st">"args"</span>: { <span class="st">"city"</span>: <span class="st">"Tokyo"</span> } }</code></pre>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;padding-left:2px;">ADK calls your Java method, appends the result to the session, then calls the LLM again — until <code>finalResponse()</code>.</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="col col-narrow" style="gap:12px;justify-content:flex-start;">
+      <div class="callout c-note">
+        <span class="callout-i">💡</span>
+        <div class="callout-b">
+          <div class="h">The LLM never runs your code</div>
+          <div class="d">It only produces a JSON object naming the tool and its arguments. ADK reads that JSON, calls the matching Java method, and feeds the result back. The LLM sees results as text — it never touches the JVM.</div>
+        </div>
+      </div>
+      <div class="callout c-warn-box">
+        <span class="callout-i">⚠️</span>
+        <div class="callout-b">
+          <div class="h">Description quality = decision quality</div>
+          <div class="d">With three tools in the list the LLM picks purely based on what you wrote in <code>@Schema</code>. Vague description → wrong tool called. Good description → correct chain every time.</div>
+        </div>
+      </div>
+      <div class="callout c-green-box">
+        <span class="callout-i">✅</span>
+        <div class="callout-b">
+          <div class="h">You write zero routing logic</div>
+          <div class="d">No switch statements, no if/else on intent. The model reads the menu, decides what to order, and ADK serves it. Your job is writing the methods and their descriptions.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+  11  FULL CLASS
+══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-i="14">
+  <div class="label"><span class="label-accent">FULL CODE</span> &nbsp;·&nbsp; The complete class — run this</div>
+  <h2 class="t-title" style="margin-bottom:8px;">TripPlannerAgent.java</h2>
+  <div class="rule"></div>
+  <div class="cols">
+    <div class="col">
+      <div class="codeblock flex-grow">
+        <div class="codebar">
+          <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+          <span class="codelang">java</span>
+          <span class="codefile">src/main/java/com/thebaselinedev/llms/TripPlannerAgent.java</span>
+          <button class="copybtn" onclick="cp(this)">Copy</button>
+        </div>
+        <pre><code><span class="kw">package</span> com.thebaselinedev.llms;
+
+<span class="kw">import</span> com.google.adk.agents.<span class="ty">LlmAgent</span>;
+<span class="kw">import</span> com.google.adk.models.<span class="ty">LlmRegistry</span>;
+<span class="kw">import</span> com.google.adk.tools.Annotations.<span class="ty">Schema</span>;
+<span class="kw">import</span> com.google.adk.tools.<span class="ty">FunctionTool</span>;
+<span class="kw">import</span> java.net.<span class="ty">URI</span>;
+<span class="kw">import</span> java.net.http.<span class="ty">HttpClient</span>;
+<span class="kw">import</span> java.net.http.<span class="ty">HttpRequest</span>;
+<span class="kw">import</span> java.net.http.<span class="ty">HttpResponse</span>;
+
+<span class="kw">public class</span> <span class="ty">TripPlannerAgent</span> {
+
+    <span class="kw">private static final</span> <span class="ty">String</span> MODEL_NAME = <span class="st">"qwen/qwen3.5-9b"</span>;
+    <span class="kw">private static</span> <span class="ty">HttpClient</span> HTTP = <span class="ty">HttpClient</span>.newHttpClient();
+
+    <span class="kw">static</span> { <span class="ty">LlmRegistry</span>.registerLlm(MODEL_NAME, name -&gt; <span class="kw">new</span> <span class="ty">LocalLLM</span>(MODEL_NAME)); }
+
+    <span class="kw">public static final</span> <span class="ty">LlmAgent</span> ROOT_AGENT = <span class="ty">LlmAgent</span>.builder()
+        .name(<span class="st">"trip-planner-agent"</span>)
+        .description(<span class="st">"Helps users plan trips"</span>)
+        .instruction(<span class="st">"You are a helpful trip planning assistant."</span>)
+        .model(MODEL_NAME)
+        .tools(
+            <span class="ty">FunctionTool</span>.create(<span class="ty">TripPlannerAgent</span>.<span class="kw">class</span>, <span class="st">"getCountryInfo"</span>),
+            <span class="ty">FunctionTool</span>.create(<span class="ty">TripPlannerAgent</span>.<span class="kw">class</span>, <span class="st">"getCityCoordinates"</span>),
+            <span class="ty">FunctionTool</span>.create(<span class="ty">TripPlannerAgent</span>.<span class="kw">class</span>, <span class="st">"getWeather"</span>))
+        .build();
+
+    <span class="an">@Schema</span>(description = <span class="st">"Get key travel facts about a country"</span>)
+    <span class="kw">public static</span> <span class="ty">String</span> <span class="fn">getCountryInfo</span>(
+        <span class="an">@Schema</span>(name=<span class="st">"country"</span>, description=<span class="st">"Country name, e.g. Japan"</span>) <span class="ty">String</span> country
+    ) <span class="kw">throws</span> <span class="ty">Exception</span> {
+        <span class="kw">return</span> fetch(<span class="st">"https://restcountries.com/v3.1/name/"</span>
+            + country.replace(<span class="st">" "</span>, <span class="st">"%20"</span>)
+            + <span class="st">"?fields=name,capital,currencies,languages,timezones,population"</span>);
+    }
+
+    <span class="an">@Schema</span>(description = <span class="st">"Get the latitude and longitude for a city"</span>)
+    <span class="kw">public static</span> <span class="ty">String</span> <span class="fn">getCityCoordinates</span>(
+        <span class="an">@Schema</span>(name=<span class="st">"city"</span>, description=<span class="st">"City name, e.g. Tokyo"</span>) <span class="ty">String</span> city
+    ) <span class="kw">throws</span> <span class="ty">Exception</span> {
+        <span class="kw">return</span> fetch(<span class="st">"https://geocoding-api.open-meteo.com/v1/search?name="</span>
+            + city.replace(<span class="st">" "</span>, <span class="st">"+"</span>) + <span class="st">"&amp;count=1&amp;language=en&amp;format=json"</span>);
+    }
+
+    <span class="an">@Schema</span>(description = <span class="st">"Get current weather for a location given its coordinates"</span>)
+    <span class="kw">public static</span> <span class="ty">String</span> <span class="fn">getWeather</span>(
+        <span class="an">@Schema</span>(name=<span class="st">"latitude"</span>,  description=<span class="st">"Latitude, e.g. 35.6895"</span>)  <span class="kw">double</span> latitude,
+        <span class="an">@Schema</span>(name=<span class="st">"longitude"</span>, description=<span class="st">"Longitude, e.g. 139.6917"</span>) <span class="kw">double</span> longitude
+    ) <span class="kw">throws</span> <span class="ty">Exception</span> {
+        <span class="kw">return</span> fetch(<span class="ty">String</span>.format(
+            <span class="st">"https://api.open-meteo.com/v1/forecast"</span>
+            + <span class="st">"?latitude=%.4f&amp;longitude=%.4f"</span>
+            + <span class="st">"&amp;current=temperature_2m,relative_humidity_2m,wind_speed_10m"</span>,
+            latitude, longitude));
+    }
+
+    <span class="kw">private static</span> <span class="ty">String</span> <span class="fn">fetch</span>(<span class="ty">String</span> url) <span class="kw">throws</span> <span class="ty">Exception</span> {
+        <span class="ty">HttpRequest</span> req = <span class="ty">HttpRequest</span>.newBuilder(<span class="ty">URI</span>.create(url)).GET().build();
+        <span class="kw">return</span> HTTP.send(req, <span class="ty">HttpResponse</span>.<span class="ty">BodyHandlers</span>.ofString()).body();
+    }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+  MERGED — What ADK Actually Runs + Tokyo trace
+══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-i="15">
+  <div class="label"><span class="label-accent">BEHIND THE SCENES</span> &nbsp;·&nbsp; What just happened when you ran that?</div>
+  <h2 class="t-title" style="margin-bottom:8px;">What ADK Actually Runs</h2>
+  <div class="rule" style="margin-top:16px;"></div>
+  <div class="cols">
+
+    <!-- LEFT: flowchart -->
+    <div style="flex:1.35;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;min-height:0;padding-top:4px;">
+      <svg viewBox="0 0 420 500" style="width:100%;height:100%;max-height:100%;" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="ra1" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#52525b"/></marker>
+          <marker id="ra2" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="rgba(41,151,255,.7)"/></marker>
+          <marker id="ra3" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="rgba(34,197,94,.7)"/></marker>
+        </defs>
+        <!-- ADK bounding box — 30px padding top, 30px bottom, loop fits right -->
+        <rect x="2" y="2" width="395" height="420" rx="9" fill="rgba(41,151,255,.03)" stroke="rgba(41,151,255,.18)" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="22" y="24" font-family="-apple-system,sans-serif" font-size="9.5" font-weight="700" letter-spacing="1.5" fill="rgba(41,151,255,.55)">ADK — BaseLlmFlow</text>
+        <!-- [1] User Input -->
+        <rect x="60" y="34" width="190" height="38" rx="7" fill="#1c1c1e" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+        <text x="155" y="50" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#f4f4f5">User Input</text>
+        <text x="155" y="64" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" fill="#71717a">message sent</text>
+        <line x1="155" y1="72" x2="155" y2="94" stroke="#52525b" stroke-width="1.5" marker-end="url(#ra1)"/>
+        <!-- [2] Build LlmRequest -->
+        <rect x="18" y="96" width="276" height="42" rx="7" fill="#1c1c1e" stroke="rgba(41,151,255,.4)" stroke-width="1.5"/>
+        <text x="156" y="113" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="rgba(41,151,255,.9)">Build LlmRequest</text>
+        <text x="156" y="128" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" fill="#71717a">history + tool schemas</text>
+        <line x1="155" y1="138" x2="155" y2="160" stroke="#52525b" stroke-width="1.5" marker-end="url(#ra1)"/>
+        <!-- [3] Model Inference -->
+        <rect x="18" y="162" width="276" height="42" rx="7" fill="#18181b" stroke="rgba(234,179,8,.4)" stroke-width="1.5"/>
+        <text x="156" y="179" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#eab308">Model Inference</text>
+        <text x="156" y="194" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" fill="#71717a">LLM decides: answer or use a tool?</text>
+        <line x1="155" y1="204" x2="155" y2="222" stroke="#52525b" stroke-width="1.5" marker-end="url(#ra1)"/>
+        <!-- [4] Diamond: center 155,242 half-w=62 -->
+        <polygon points="155,224 217,248 155,272 93,248" fill="#18181b" stroke="rgba(255,255,255,.18)" stroke-width="1.5"/>
+        <text x="155" y="244" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" font-weight="700" fill="#f4f4f5">tool</text>
+        <text x="155" y="257" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="10.5" font-weight="700" fill="#f4f4f5">call?</text>
+        <!-- YES → Execute box -->
+        <text x="221" y="242" font-family="-apple-system,sans-serif" font-size="10" font-weight="700" fill="#22c55e">YES</text>
+        <line x1="217" y1="248" x2="236" y2="248" stroke="rgba(34,197,94,.7)" stroke-width="1.5" marker-end="url(#ra3)"/>
+        <rect x="238" y="231" width="104" height="34" rx="7" fill="rgba(34,197,94,.07)" stroke="rgba(34,197,94,.35)" stroke-width="1.5"/>
+        <text x="290" y="245" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="#22c55e">Execute</text>
+        <text x="290" y="258" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" fill="#71717a">Java FunctionTool</text>
+        <!-- LOOP arrow: right of Execute (342) → elbow at x=362 → up to y=117 → left to Build right (294) -->
+        <path d="M342,248 L362,248 L362,117 L294,117" fill="none" stroke="rgba(41,151,255,.45)" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#ra2)"/>
+        <!-- LOOP label sits at x=376, path line at x=362 — 14px gap, well inside box right=397 -->
+        <text x="376" y="186" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="8.5" font-weight="700" fill="rgba(41,151,255,.7)" transform="rotate(-90,376,186)">LOOP</text>
+        <!-- NO → down -->
+        <text x="108" y="284" font-family="-apple-system,sans-serif" font-size="10" font-weight="700" fill="#ef4444">NO</text>
+        <line x1="155" y1="272" x2="155" y2="294" stroke="#52525b" stroke-width="1.5" marker-end="url(#ra1)"/>
+        <!-- [5] Final Response -->
+        <rect x="18" y="296" width="276" height="42" rx="7" fill="#18181b" stroke="rgba(34,197,94,.45)" stroke-width="1.5"/>
+        <text x="156" y="321" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#22c55e">Final Response</text>
+        <line x1="155" y1="338" x2="155" y2="358" stroke="rgba(34,197,94,.5)" stroke-width="1.5" marker-end="url(#ra3)"/>
+        <!-- [6] User sees — bottom=400, box bottom=455 → 55px padding -->
+        <rect x="60" y="360" width="190" height="40" rx="7" fill="#1c1c1e" stroke="rgba(34,197,94,.3)" stroke-width="1.5"/>
+        <text x="155" y="377" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12" font-weight="700" fill="#f4f4f5">User sees</text>
+        <text x="155" y="391" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="9" fill="#71717a">stringifyContent()</text>
+        <!-- footer -->
+        <text x="10" y="470" font-family="-apple-system,sans-serif" font-size="8.5" fill="#52525b">ADK: loop · request assembly · dispatch · session</text>
+        <text x="10" y="484" font-family="-apple-system,sans-serif" font-size="8.5" fill="#52525b">LLM: tool call JSON  or  final text — nothing else</text>
+        <text x="10" y="498" font-family="-apple-system,sans-serif" font-size="8.5" fill="#52525b">You: system prompt · plain Java tool methods</text>
+      </svg>
+    </div>
+
+    <!-- RIGHT: detailed step-by-step trace -->
+    <div class="col col-narrow" style="gap:0;justify-content:flex-start;padding-left:12px;">
+      <div class="steps">
+        <div class="step">
+          <div class="step-g"><div class="step-n">1</div><div class="step-l"></div></div>
+          <div class="step-c">
+            <div class="step-title">Message enters the session</div>
+            <div class="step-desc">ADK wraps the user message and appends it to session history.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-g"><div class="step-n">2</div><div class="step-l"></div></div>
+          <div class="step-c">
+            <div class="step-title">ADK builds the LlmRequest</div>
+            <div class="step-desc">Packs: system prompt + full session history + <strong>JSON Schema for all three tools</strong>. The LLM now knows <code>getCountryInfo</code>, <code>getCityCoordinates</code>, and <code>getWeather</code> exist and what they take.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-g"><div class="step-n">3</div><div class="step-l"></div></div>
+          <div class="step-c">
+            <div class="step-title">LLM returns a tool-call request, not text</div>
+            <div class="step-desc">The model decides it needs real data and responds with a JSON request for <code>getCityCoordinates("Tokyo")</code>. No answer yet — the LLM cannot call code itself; it just asks ADK to do it.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-g"><div class="step-n">4</div><div class="step-l"></div></div>
+          <div class="step-c">
+            <div class="step-title">ADK dispatches, loop repeats</div>
+            <div class="step-desc">ADK executes <code>getCityCoordinates</code> and feeds the result back. The LLM responds with another tool-call request — <code>getWeather(lat, lon)</code>. ADK runs it, feeds the result back again. The LLM then requests <code>getCountryInfo("Japan")</code>. ADK runs that too.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-g"><div class="step-n">5</div><div class="step-l"></div></div>
+          <div class="step-c">
+            <div class="step-title">All results in session, LLM writes the answer</div>
+            <div class="step-desc">After all three tools have run, ADK calls the LLM one final time with all results in the session history. Now the LLM has live weather data <em>and</em> country facts — it returns plain text.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-g"><div class="step-n">6</div></div>
+          <div class="step-c">
+            <div class="step-title">finalResponse() fires</div>
+            <div class="step-desc"><em>"Tokyo is 17.6°C with 75% humidity. Japan uses JPY and runs on UTC+9…"</em> — grounded in data fetched moments ago.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+  14  KEY TAKEAWAYS
+══════════════════════════════════════════════════════════════ -->
+<div class="slide" data-i="16">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:860px;">
+    <div class="label" style="margin-bottom:28px;font-size:18px;letter-spacing:.08em;">
+      <span class="label-accent">02</span> &nbsp;·&nbsp; Key Takeaways
+    </div>
+    <h1 class="t-hero" style="font-size:clamp(42px,6vw,86px);margin-bottom:36px;">
+      What you <b>learned</b>
+    </h1>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:800px;">
+      <div class="card" style="border-color:rgba(41,151,255,.3);">
+        <div class="card-title">LLM vs Agent</div>
+        <div class="card-body">An agent wraps an LLM with tools and a decision loop — so it can act, not just answer.</div>
+      </div>
+      <div class="card" style="border-color:rgba(41,151,255,.3);">
+        <div class="card-title">Tools are plain Java methods</div>
+        <div class="card-body">Annotate with <code>@Schema</code>, register with <code>FunctionTool.create()</code>. ADK converts the method signature into a JSON Schema the LLM reads on every request.</div>
+      </div>
+      <div class="card" style="border-color:rgba(41,151,255,.3);">
+        <div class="card-title">@Schema descriptions drive calls</div>
+        <div class="card-body">The LLM does intent matching against your descriptions — not if/else logic. Clear descriptions = correct calls. No annotation = silent failure.</div>
+      </div>
+      <div class="card" style="border-color:rgba(41,151,255,.3);">
+        <div class="card-title">Tool chaining is automatic</div>
+        <div class="card-body"><code>getCityCoordinates</code> → <code>getWeather</code> are chained by the LLM because one's output is the other's input. You write zero routing or glue code.</div>
+      </div>
+      <div class="card" style="border-color:rgba(34,197,94,.3);">
+        <div class="card-title">Three real APIs, no keys</div>
+        <div class="card-body">RestCountries, Open-Meteo geocoding, and Open-Meteo forecast are all free with no auth. Your tools return live data from the very first run.</div>
+      </div>
+      <div class="card" style="border-color:rgba(234,179,8,.3);">
+        <div class="card-title">ADK owns the loop</div>
+        <div class="card-body"><code>BaseLlmFlow</code> runs the LLM → tool → LLM cycle. <code>runAsync</code> returns a <code>Flowable&lt;Event&gt;</code> — filter with <code>finalResponse()</code> to get the answer.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<nav class="nav">
+  <button class="nav-btn" id="pbtn" onclick="go(-1)" disabled>←</button>
+  <span class="nav-counter" id="ctr">1 / 17</span>
+  <div class="nav-progress"><div class="nav-bar" id="bar"></div></div>
+  <div class="nav-dots" id="ndots"></div>
+  <button class="nav-btn" id="nbtn" onclick="go(1)">→</button>
+</nav>
+
+<script>
+const slides = Array.from(document.querySelectorAll('.slide'));
+const N = slides.length;
+let cur = 0;
+
+const dotsEl = document.getElementById('ndots');
+slides.forEach((_,i) => {
+  const d = document.createElement('button');
+  d.className = 'nav-dot'+(i===0?' on':'');
+  d.onclick = () => goTo(i);
+  dotsEl.appendChild(d);
+});
+
+function goTo(n) {
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add('out');
+  setTimeout(() => slides[cur].classList.remove('out'), 450);
+  cur = n;
+  slides[cur].classList.add('active');
+  document.querySelectorAll('.nav-dot').forEach((d,i) => d.classList.toggle('on', i===cur));
+  document.getElementById('ctr').textContent = (cur+1)+' / '+N;
+  document.getElementById('bar').style.width = ((cur+1)/N*100)+'%';
+  document.getElementById('pbtn').disabled = cur===0;
+  document.getElementById('nbtn').disabled = cur===N-1;
+}
+
+function go(d) { const n=cur+d; if(n>=0&&n<N) goTo(n); }
+
+document.addEventListener('keydown', e => {
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(1);}
+  if(e.key==='ArrowLeft'){e.preventDefault();go(-1);}
+});
+
+document.getElementById('bar').style.width = (1/N*100)+'%';
+
+function cp(btn) {
+  const text = btn.closest('.codeblock').querySelector('pre').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const o = btn.textContent;
+    btn.textContent = 'Copied';
+    setTimeout(() => { btn.textContent = o; }, 1600);
+  });
+}
+</script>
+</body>
+</html>
