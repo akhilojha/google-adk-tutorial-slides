@@ -197,12 +197,13 @@ code{font-family:var(--mono);font-size:.88em;background:var(--accent-d);color:va
           <button class="copybtn" onclick="cp(this)">Copy</button>
         </div>
         <pre><code><span class="cm">// 1. Create the MCP toolset — ADK spawns the server process</span>
-<span class="ty">StdioServerParameters</span> mcpParams = <span class="ty">StdioServerParameters</span>.builder()
+<span class="kw">static</span> <span class="ty">StdioServerParameters</span> mcpParams = <span class="ty">StdioServerParameters</span>.builder()
     .command(<span class="st">"uvx"</span>)
     .args(<span class="ty">List</span>.of(<span class="st">"mcp-atlassian"</span>))
     .env(<span class="ty">Map</span>.of(
-        <span class="st">"ATLASSIAN_URL"</span>,   System.getenv(<span class="st">"ATLASSIAN_URL"</span>),
-        <span class="st">"ATLASSIAN_TOKEN"</span>, System.getenv(<span class="st">"ATLASSIAN_TOKEN"</span>)
+        <span class="st">"CONFLUENCE_URL"</span>,       <span class="st">"https://&lt;your-domain&gt;.atlassian.net/wiki"</span>,
+        <span class="st">"CONFLUENCE_USERNAME"</span>,  <span class="st">"&lt;your-email&gt;"</span>,
+        <span class="st">"CONFLUENCE_API_TOKEN"</span>, <span class="st">"&lt;your-api-token&gt;"</span>
     ))
     .build();
 
